@@ -608,7 +608,7 @@ func createXEPGDatabase() (err error) {
 			newChannel.GroupTitle = m3uChannel.GroupTitle
 			newChannel.Name = m3uChannel.Name
 			newChannel.TvgID = m3uChannel.TvgID
-			newChannel.TvgLogo = m3uChannel.TvgLogo
+			newChannel.TvgLogo = m3uChannel.TvgLogo // Set M3U logo initially
 			newChannel.TvgName = m3uChannel.TvgName
 			newChannel.URL = m3uChannel.URL
 			newChannel.Live, _ = strconv.ParseBool(m3uChannel.LiveEvent)
@@ -645,19 +645,15 @@ func createXEPGDatabase() (err error) {
 						newChannel.XMapping = channelID
 						newChannel.XActive = true
 
-						// Falls in der XMLTV Datei ein Logo existiert, wird dieses verwendet. Falls nicht, dann das Logo aus der M3U Datei
-						/*if icon, ok := chmap["icon"].(string); ok {
-							if len(icon) > 0 {
-								newChannel.TvgLogo = icon
-							}
-						}*/
+						// Use XMLTV logo if available and M3U logo is empty
+						if icon, ok := chmap["icon"].(string); ok && len(icon) > 0 && len(newChannel.TvgLogo) == 0 {
+							var imgc = Data.Cache.Images
+							newChannel.TvgLogo = imgc.Image.GetURL(icon, Settings.HttpThreadfinDomain, Settings.Port, Settings.ForceHttps, Settings.HttpsPort, Settings.HttpsThreadfinDomain)
+						}
 
 						break
-
 					}
-
 				}
-
 			}
 
 			programData, _ := getProgramData(newChannel)
